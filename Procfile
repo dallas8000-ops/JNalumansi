@@ -1,1 +1,1 @@
-web: node kistie-store/backend/index.js
+web: node index.js
