@@ -1,1 +1,1 @@
-web: gunicorn shopmonitor.wsgi
+web: node kistie-store/backend/index.js
