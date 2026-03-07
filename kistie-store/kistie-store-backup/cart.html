@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Cart Review</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="Mystyle.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1 style="text-align:center;">Your Cart</h1>
+            <nav style="display:flex;gap:1.2rem;justify-content:center;margin-bottom:0.5rem;">
+                <a href="index.html" class="nav-link">Home</a>
+                <a href="catalog-pro.html" class="nav-link">Catalog</a>
+                <a href="cart.html" class="nav-link active">Cart</a>
+            </nav>
+        </div>
+    </header>
+    <main>
+        <div class="container">
+            <h2>Review Your Cart</h2>
+            <table style="width:100%;margin-top:2rem;border-collapse:collapse;">
+                <thead>
+                    <tr style="background:#0B294D;color:#fff;">
+                        <th>Product</th>
+                        <th>Price</th>
+                        <th>Quantity</th>
+                        <th>Edit</th>
+                    </tr>
+                </thead>
+                <tbody id="cartItems">
+                    <!-- Cart items will be rendered here by JS -->
+                </tbody>
+            </table>
+            <div style="text-align:right;margin-top:1rem;">
+                <button id="clearCartBtn" style="background:#d9534f;color:#fff;padding:0.5rem 1.2rem;border:none;border-radius:4px;cursor:pointer;">Delete</button>
+            </div>
+            <div id="cartEmpty" style="text-align:center;margin:2rem 0;color:#888;display:none;">Your cart is empty.</div>
+        </div>
+    </main>
+    <footer>
+        <div class="container">
+            <div class="footer-content" style="text-align:center;padding:2rem 0 1rem 0;">
+                <p style="margin-bottom:0.5rem;">&copy; 2024 Kistie Store. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+    <script src="cart.js"></script>
+</body>
+</html>
