@@ -1,9 +1,9 @@
 @echo off
 REM Start backend server
-start cmd /k "cd backend && if not exist node_modules npm install && npm run dev"
+start "" /b cmd /c "cd backend && if not exist node_modules (echo [backend] node_modules missing - run npm install once) else npm run dev"
 
 REM Start React frontend
-start cmd /k "cd React && if not exist node_modules npm install && npm run dev"
+start "" /b cmd /c "cd React && if not exist node_modules (echo [React] node_modules missing - run npm install once) else npm run dev"
 
 echo Both backend and frontend are starting in new terminals.
-pause
+REM IMPORTANT: Do not block with `pause` so Cursor/Open-App actions don't hang.

@@ -166,7 +166,8 @@ html {
 
 body {
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-    background: var(--nalumansi-body-bg);
+    background: linear-gradient(135deg, #e0eafc 0%, #cfdef3 100%), url('/images/Floral Red.jpg') no-repeat center center fixed;
+    background-size: cover;
     color: var(--nalumansi-text-color);
     line-height: 1.6;
     display: flex;

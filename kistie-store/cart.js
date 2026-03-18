@@ -24,7 +24,7 @@ function saveAll() {
 function renderProducts() {
   reloadData();
   // Fetch products from backend if needed, or use window.products
-  fetch('http://localhost:3000/api/products')
+  fetch('http://localhost:3001/api/products')
     .then(res => res.json())
     .then(products => {
       window.products = products;
@@ -144,7 +144,7 @@ window.addEventListener('storage', function(e) {
 
 async function deleteProduct(id) {
   if (!confirm('Are you sure you want to delete this product?')) return;
-  const res = await fetch(`http://localhost:3000/api/products/${id}`, { method: 'DELETE' });
+  const res = await fetch(`http://localhost:3001/api/products/${id}`, { method: 'DELETE' });
   const data = await res.json();
   if (data.deleted) {
     alert('Product deleted!');

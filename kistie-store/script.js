@@ -16,7 +16,7 @@ function renderProducts() {
   if (!table) return;
   const tbody = table.querySelector('tbody');
   tbody.innerHTML = '';
-  fetch('http://127.0.0.1:3000/api/products', { credentials: 'include' })
+    fetch('http://localhost:3001/api/products', { credentials: 'include' })
     .then(res => res.json())
     .then(products => {
       window.products = products;
@@ -90,7 +90,7 @@ function editProduct(idx) {
     return;
   }
   // Update product via backend API
-  fetch(`http://127.0.0.1:3000/api/products/${product.id || product._id || idx}`, {
+    fetch(`http://localhost:3001/api/products/${product.id || product._id || idx}`, {
     method: 'PUT',
     credentials: 'include',
     headers: { 'Content-Type': 'application/json' },
@@ -108,7 +108,7 @@ function editProduct(idx) {
 function removeProduct(idx) {
   if (!confirm('Remove this product?')) return;
   const product = window.products[idx];
-  fetch(`http://127.0.0.1:3000/api/products/${product.id || product._id || idx}`, {
+    fetch(`http://localhost:3001/api/products/${product.id || product._id || idx}`, {
     method: 'DELETE',
     credentials: 'include'
   })
@@ -133,7 +133,7 @@ document.addEventListener('DOMContentLoaded', function() {
         alert('Invalid input.');
         return;
       }
-      fetch('http://127.0.0.1:3000/api/products', {
+        fetch('http://localhost:3001/api/products', {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },

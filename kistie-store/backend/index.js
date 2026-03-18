@@ -11,7 +11,7 @@ const fs = require('fs');
 const bcrypt = require('bcrypt');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3001;
 const DB_PATH = process.env.DB_PATH ? path.resolve(__dirname, process.env.DB_PATH) : path.join(__dirname, 'db.sqlite');
 
 // Middleware setup
@@ -19,7 +19,8 @@ const corsOptions = {
   origin: [
     'http://127.0.0.1:5500', // static HTML dev server
     'http://localhost:3000', // React dev server or same-origin
-    'http://127.0.0.1:3000', // Allow 127.0.0.1:3000 for local dev
+    'http://localhost:3001', // Use localhost:3001 for main backend
+    'http://127.0.0.1:3001', // Allow 127.0.0.1:3001 for local dev
     'http://localhost:5173', // Vite default dev server
     'http://127.0.0.1:5173', // Allow 127.0.0.1:5173 for local dev
   ],
@@ -35,6 +36,9 @@ app.use(session({
 
 // Serve static files from the project root (one level up from backend)
 app.use(express.static(path.join(__dirname, '..')));
+
+// Serve images folder at /images
+app.use('/images', express.static(path.join(__dirname, '..', 'images')));
 
 // --- Middleware to Protect Admin Routes ---
 function requireAdmin(req, res, next) {

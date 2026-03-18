@@ -43,8 +43,8 @@
     msg.textContent = '';
     const destination = document.getElementById('shipDestination').value;
     const weightKg = parseFloat(document.getElementById('shipWeight').value);
-    try {fix code as NonDocumentTypeChildNode
-      const res = await fetch('http://127.0.0.1:3000/api/shipping-quote', {
+    try {
+      const res = await fetch('http://localhost:3001/api/shipping-quote', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ destination, weightKg }),
@@ -73,7 +73,7 @@
     // For demo, use a static session id (in production, use real session/auth)
     const session = 'guest';
     try {
-      const res = await fetch('http://127.0.0.1:3000/api/orders', {
+      const res = await fetch('http://localhost:3001/api/orders', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-session-id': session },
         body: JSON.stringify({ name, email, phone, currency }),
@@ -98,7 +98,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Kistie Store - Inventory</title>
-  <link rel="stylesheet" href="Mystyle.css">
+  <link rel="stylesheet" href="../kistie-store-backup/Mystyle.css">
   <style>
     .inventory-container { max-width: 1200px; margin: 2rem auto; padding: 1rem; }
     .inventory-header { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
@@ -243,7 +243,7 @@
           const username = document.getElementById('adminUsername').value;
           const password = document.getElementById('adminPassword').value;
           try {
-            const res = await fetch('http://127.0.0.1:3000/api/login', {
+            const res = await fetch('http://localhost:3001/api/login', {
               method: 'POST',
               credentials: 'include',
               headers: { 'Content-Type': 'application/json' },
@@ -262,7 +262,7 @@
         };
         adminLogoutBtn.onclick = async function() {
           try {
-            await fetch('http://127.0.0.1:3000/api/logout', { method: 'POST', credentials: 'include' });
+            await fetch('http://localhost:3001/api/logout', { method: 'POST', credentials: 'include' });
           } catch (e) {}
           localStorage.removeItem('kistieAdmin');
           setAdminUI(false);
@@ -271,7 +271,7 @@
         // On page load, check backend session for admin status
         async function checkAdminSession() {
           try {
-            const res = await fetch('http://127.0.0.1:3000/api/products', { credentials: 'include' });
+            const res = await fetch('http://localhost:3001/api/products', { credentials: 'include' });
             // If products endpoint works, check if admin UI should be shown (localStorage fallback for now)
             if (localStorage.getItem('kistieAdmin') === 'true') {
               setAdminUI(true);
