@@ -159,7 +159,14 @@ window.addToCart = function(i) {
   let idx = cart.findIndex(item=>item.productIndex===i);
   if(idx>-1) cart[idx].qty++;
   else cart.push({productIndex:i,qty:1});
-  saveAll(); renderCart(); };
+  saveAll(); renderCart();
+};
+
+// Buy Now logic: after confirmation, redirect to inventory.html
+window.buyNow = function(product) {
+  // Redirect to checkout section for shipping/payment
+  window.location.href = 'inventory.html#checkout';
+};
 window.removeFromCart = function(i) {
   cart.splice(i,1); saveAll(); renderCart(); };
 

@@ -87,5 +87,22 @@
     </footer>
         <p>&copy; 2026 Kistie Store. All rights reserved.</p>
         <p>Contact us on WhatsApp: <a href="https://wa.me/256704757198" target="_blank">+256 704 757198</a></p>
+    <script>
+  // Dark mode toggle logic
+  const themeToggle = document.getElementById('themeToggle');
+  function setTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('theme', theme);
+  }
+  // Load saved theme on page load
+  const savedTheme = localStorage.getItem('theme') || 'light';
+  setTheme(savedTheme);
+
+  themeToggle.onclick = function() {
+    const currentTheme = document.documentElement.getAttribute('data-theme');
+    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    setTheme(newTheme);
+  };
+</script>
 </body>
 </html>

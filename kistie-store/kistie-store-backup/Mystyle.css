@@ -1,3 +1,53 @@
+.inventory-container {
+    background: var(--nalumansi-card-bg);
+    border-radius: 1rem;
+    box-shadow: 0 2px 16px rgba(44,62,80,0.10);
+    padding: 2rem;
+    margin: 2rem auto;
+    max-width: 1200px;
+    color: var(--nalumansi-text-color);
+}
+
+.inventory-header h2 {
+    color: var(--nalumansi-primary-accent);
+}
+
+.product-console, .cart-console, .coupon-console {
+    background: var(--nalumansi-header-bg);
+    border-radius: 1rem;
+    box-shadow: 0 2px 8px rgba(44,62,80,0.08);
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.product-table th {
+    background: var(--nalumansi-primary-accent);
+    color: #fff;
+}
+
+.product-table td button,
+.add-product-form button {
+    background: var(--nalumansi-primary-accent);
+    color: #fff;
+    border: none;
+    border-radius: 0.5rem;
+    padding: 0.3rem 1rem;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.product-table td button:hover,
+.add-product-form button:hover {
+    background: #217dbb;
+}
+.inventory-container {
+    background: rgba(255, 255, 255, 0.92);
+    border-radius: 1rem;
+    box-shadow: 0 2px 8px rgba(44,62,80,0.08);
+    padding: 2rem;
+    margin: 2rem auto;
+    max-width: 1200px;
+}
 body {
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
     background: url('images/Floral Red.jpg') no-repeat center center fixed, linear-gradient(135deg, #e0eafc 0%, #cfdef3 100%);
@@ -15,7 +65,6 @@ body {
 html[data-theme="dark"] body {
     background: var(--nalumansi-body-bg) !important;
     color: var(--nalumansi-text-color) !important;
-}
 }
 
 .nalumansi-card {
