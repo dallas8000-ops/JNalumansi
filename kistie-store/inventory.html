@@ -1,3 +1,18 @@
+      <!-- Edit Product Modal -->
+      <div id="editProductModal" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.4);z-index:2000;align-items:center;justify-content:center;">
+        <div style="background:#fff;padding:2rem 2rem 1rem 2rem;border-radius:1rem;max-width:400px;width:90%;margin:auto;box-shadow:0 4px 24px rgba(0,0,0,0.18);position:relative;">
+          <h3>Edit Product</h3>
+          <form id="editProductForm">
+            <input type="text" id="editProductName" placeholder="Product Name" required style="width:100%;margin-bottom:1rem;">
+            <input type="number" id="editProductPrice" placeholder="Price" required style="width:100%;margin-bottom:1rem;">
+            <input type="text" id="editProductImage" placeholder="Image URL" style="width:100%;margin-bottom:1rem;">
+            <div style="display:flex;justify-content:flex-end;gap:1rem;">
+              <button type="button" id="cancelEditBtn">Cancel</button>
+              <button type="submit">Save</button>
+            </div>
+          </form>
+        </div>
+      </div>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -59,8 +74,24 @@
       <section id="checkout" class="catalog-container" style="margin-bottom:2rem;background:#f8f9fa;border-radius:1rem;box-shadow:0 2px 8px rgba(44,62,80,0.08);padding:2rem 1.5rem;">
         <h2 style="color:#007bff;margin-bottom:0.5em;">Checkout: Shipping & Payment</h2>
         <p style="font-size:1.1em;">Fill in your shipping destination and order details to complete your purchase.</p>
-        <!-- Place your shipping and payment forms here -->
-        <!-- Example: -->
+        <!-- Cart Summary Table -->
+        <div id="cartSummaryContainer" style="margin-bottom:1.5rem;">
+          <h3>Your Cart</h3>
+          <table id="cartSummaryTable" style="width:100%;border-collapse:collapse;">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Quantity</th>
+                <th>Price</th>
+                <th>Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- Cart items will be rendered here by JS -->
+            </tbody>
+          </table>
+          <div id="cartSummaryTotal" style="text-align:right;font-weight:bold;margin-top:0.5rem;"></div>
+        </div>
         <form id="shippingForm">
           <label for="shipDestination">Destination:</label>
           <select id="shipDestination" required>
@@ -88,11 +119,31 @@
         </form>
         <div id="orderFormMsg"></div>
       </section>
-      <!-- The rest of your inventory/admin/product management sections go here -->
-      <!-- ... -->
+      <!-- Product Management Section (admin only) -->
+      <div id="productManagementSection" style="display:none;">
+        <form id="addProductForm" class="add-product-form">
+          <input type="text" id="productName" placeholder="Product Name" required>
+          <input type="number" id="productPrice" placeholder="Price" required>
+          <input type="text" id="productImage" placeholder="Image URL">
+          <button type="submit">Add Product</button>
+        </form>
+        <table class="product-table" id="productTable">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Price</th>
+              <th>Image</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Products will be rendered here by JS -->
+          </tbody>
+        </table>
+      </div>
     </div>
   </main>
-  <script src="inventory.js"></script>
+  <script src="script.js"></script>
   <!-- Add your admin login/order/shipping JS logic here as needed -->
 </body>
 </html>
