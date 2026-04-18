@@ -190,24 +190,30 @@ document.addEventListener('DOMContentLoaded', function() {
     // Simple session state
     function setAdminLoggedIn(isLoggedIn) {
       const productSection = document.getElementById('productManagementSection');
+      // Fallback if loginMsg is missing
+      const msg = loginMsg || document.getElementById('adminLoginMsg');
       if (isLoggedIn) {
-        loginMsg.style.color = 'green';
-        loginMsg.textContent = 'Logged in as admin.';
-        usernameInput.style.display = 'none';
-        passwordInput.style.display = 'none';
-        loginForm.querySelector('button[type="submit"]').style.display = 'none';
-        logoutBtn.style.display = '';
+        if (msg) {
+          msg.style.color = 'green';
+          msg.textContent = 'Logged in as admin.';
+        }
+        if (usernameInput) usernameInput.style.display = 'none';
+        if (passwordInput) passwordInput.style.display = 'none';
+        if (loginForm.querySelector('button[type="submit"]')) loginForm.querySelector('button[type="submit"]').style.display = 'none';
+        if (logoutBtn) logoutBtn.style.display = '';
         if (productSection) {
           productSection.style.display = '';
           renderProducts();
         }
       } else {
-        loginMsg.style.color = '#c00';
-        loginMsg.textContent = '';
-        usernameInput.style.display = '';
-        passwordInput.style.display = '';
-        loginForm.querySelector('button[type="submit"]').style.display = '';
-        logoutBtn.style.display = 'none';
+        if (msg) {
+          msg.style.color = '#c00';
+          msg.textContent = '';
+        }
+        if (usernameInput) usernameInput.style.display = '';
+        if (passwordInput) passwordInput.style.display = '';
+        if (loginForm.querySelector('button[type="submit"]')) loginForm.querySelector('button[type="submit"]').style.display = '';
+        if (logoutBtn) logoutBtn.style.display = 'none';
         if (productSection) {
           productSection.style.display = 'none';
         }
@@ -250,34 +256,7 @@ function renderCart() {
   if (!cartTable || !cartTotalDiv) return;
   const tbody = cartTable.querySelector('tbody');
   tbody.innerHTML = '';
-  let totalUSD = 0;
-  // Default to USD if not set
-  let selectedCurrency = 'USD';
-  const currencySelect = document.getElementById('orderCurrency');
-  if (currencySelect) {
-    selectedCurrency = currencySelect.value;
-  }
-  // Conversion rates (update as needed)
-  // Live rates (default fallback)
-  let rates = { USD: 1, UGX: 3695, KES: 129, EUR: 0.85 };
-  if (window.liveRates) {
-    rates = window.liveRates;
-  }
-  // Fetch live currency rates and update window.liveRates
-  async function fetchLiveRates() {
-    try {
-      const res = await fetch('https://api.exchangerate.host/latest?base=USD&symbols=USD,UGX,KES,EUR');
-      const data = await res.json();
-      if (data && data.rates) {
-        window.liveRates = data.rates;
-        window.liveRates.USD = 1; // Ensure USD is always 1
-        // Re-render cart with new rates
-        renderCart();
-      }
-    } catch (e) {
-      // Ignore errors, fallback to static rates
-    }
-  }
+  // Show each item's price and total in its own currency
   const symbols = { USD: '$', UGX: 'USh', KES: 'KSh', EUR: '€' };
   if (!window.cart || window.cart.length === 0) {
     const tr = document.createElement('tr');
@@ -289,6 +268,8 @@ function renderCart() {
     cartTotalDiv.textContent = '';
     return;
   }
+  // Group totals by currency
+  const totalsByCurrency = {};
   window.cart.forEach(item => {
     const tr = document.createElement('tr');
     const tdName = document.createElement('td');
@@ -298,17 +279,19 @@ function renderCart() {
     tdQty.textContent = item.quantity || 1;
     tr.appendChild(tdQty);
     const tdPrice = document.createElement('td');
-    // Always show price in USD for base, convert for display
-    tdPrice.textContent = symbols[selectedCurrency] + ((item.price || 0) * rates[selectedCurrency]).toLocaleString();
+    tdPrice.textContent = (symbols[item.currency] || '') + (item.price != null ? item.price.toLocaleString() : '');
     tr.appendChild(tdPrice);
     const tdTotal = document.createElement('td');
-    const itemTotalUSD = (item.price || 0) * (item.quantity || 1);
-    tdTotal.textContent = symbols[selectedCurrency] + (itemTotalUSD * rates[selectedCurrency]).toLocaleString();
+    const itemTotal = (item.price || 0) * (item.quantity || 1);
+    tdTotal.textContent = (symbols[item.currency] || '') + itemTotal.toLocaleString();
     tr.appendChild(tdTotal);
-    totalUSD += itemTotalUSD;
+    // Sum totals by currency
+    if (!totalsByCurrency[item.currency]) totalsByCurrency[item.currency] = 0;
+    totalsByCurrency[item.currency] += itemTotal;
     tbody.appendChild(tr);
   });
-  cartTotalDiv.textContent = 'Cart Total: ' + symbols[selectedCurrency] + (totalUSD * rates[selectedCurrency]).toLocaleString();
+  // Show all totals by currency
+  cartTotalDiv.textContent = 'Cart Total: ' + Object.entries(totalsByCurrency).map(([cur, val]) => (symbols[cur] || cur) + val.toLocaleString() + ' ' + cur).join(' | ');
 // End of renderCart
 }
 function renderCoupons() {
@@ -372,6 +355,49 @@ document.addEventListener('DOMContentLoaded', function() {
     // Render cart summary on page load
     renderCart();
 
-    // Fetch live currency rates on page load
-    fetchLiveRates();
+    // Order submission logic for inventory.html
+    const orderForm = document.getElementById('orderForm');
+    const orderFormMsg = document.getElementById('orderFormMsg');
+    if (orderForm) {
+      orderForm.onsubmit = async function(e) {
+        e.preventDefault();
+        orderFormMsg.textContent = '';
+        // Collect form data
+        const name = document.getElementById('orderName').value.trim();
+        const email = document.getElementById('orderEmail').value.trim();
+        const phone = document.getElementById('orderPhone').value.trim();
+        const currency = document.getElementById('orderCurrency').value;
+        // Optionally validate fields here
+        if (!name || !email || !phone || !currency) {
+          orderFormMsg.textContent = 'Please fill in all fields.';
+          orderFormMsg.style.color = '#c00';
+          return;
+        }
+        // Send order to backend
+        try {
+          const res = await fetch('http://localhost:3001/api/orders', {
+            method: 'POST',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ currency })
+          });
+          const data = await res.json();
+          if (res.ok && data.order_id) {
+            orderFormMsg.textContent = 'Order completed! Your order ID is ' + data.order_id;
+            orderFormMsg.style.color = 'green';
+            // Optionally clear cart and form
+            window.cart = [];
+            localStorage.setItem('cart', '[]');
+            renderCart();
+            orderForm.reset();
+          } else {
+            orderFormMsg.textContent = data.error || 'Order failed.';
+            orderFormMsg.style.color = '#c00';
+          }
+        } catch (err) {
+          orderFormMsg.textContent = 'Order failed: ' + err.message;
+          orderFormMsg.style.color = '#c00';
+        }
+      };
+    }
 });

@@ -859,10 +859,7 @@
                             // Use localStorage for cart (simple array of items)
                             let cart = JSON.parse(localStorage.getItem('cart')||'[]');
                             // Calculate price in selected currency
-                            let price = selectedProduct.basePrice;
-                            if (selectedCurrency === 'UGX' && exchangeRates['UGX']) price = Math.round(selectedProduct.basePrice * exchangeRates['UGX'].multiplier);
-                            else if (selectedCurrency === 'KES' && exchangeRates['KES']) price = Math.round(selectedProduct.basePrice * exchangeRates['KES'].multiplier);
-                            // Add more currencies if needed
+                            let price = Math.round(selectedProduct.basePrice * exchangeRates[selectedCurrency].multiplier);
                             cart.push({
                                 id: selectedProduct.id,
                                 name: selectedProduct.name,
@@ -887,10 +884,7 @@
                     // Use localStorage for cart (simple array of items)
                     let cart = JSON.parse(localStorage.getItem('cart')||'[]');
                     // Calculate price in selected currency
-                    let price = selectedProduct.basePrice;
-                    if (selectedCurrency === 'UGX' && exchangeRates['UGX']) price = Math.round(selectedProduct.basePrice * exchangeRates['UGX'].multiplier);
-                    else if (selectedCurrency === 'KES' && exchangeRates['KES']) price = Math.round(selectedProduct.basePrice * exchangeRates['KES'].multiplier);
-                    // Add more currencies if needed
+                    let price = Math.round(selectedProduct.basePrice * exchangeRates[selectedCurrency].multiplier);
                     cart.push({
                         id: selectedProduct.id,
                         name: selectedProduct.name,
@@ -907,60 +901,72 @@
 
                 // --- Remove from Catalog Logic ---
                 function removeFromCatalogModal() {
-                    if (!confirm('Are you sure you want to remove this product from the catalog?')) return;
-                    // Remove from products array
-                    const idx = products.findIndex(p => p.id === selectedProduct.id);
-                    if (idx > -1) {
-                        products.splice(idx, 1);
-                        alert('Product removed from catalog.');
-                        // Optionally persist to localStorage
-                        localStorage.setItem('products', JSON.stringify(products));
-                        // Refresh grid
-                        document.getElementById('productGrid').innerHTML = '';
-                        initProductGrid();
-                        closeModal();
-                    }
+                    if (!confirm('Are you sure you want to remove this item from your cart?')) return;
+                    let cart = JSON.parse(localStorage.getItem('cart')||'[]');
+                    cart = cart.filter(item => item.id !== selectedProduct.id);
+                    localStorage.setItem('cart', JSON.stringify(cart));
+                    alert('Item removed from cart.');
+                    closeModal();
                 }
         // Product data
         const products = [
+                // Merged unique products from old and new lists
                 { id: 1001, name: 'Black Style', image: 'images/Black Style.jpg', basePrice: 110 },
                 { id: 1002, name: 'Female in Black', image: 'images/Female in Black.jpg', basePrice: 125 },
-            { id: 1, name: 'Premium Dress', image: 'images/WhatsApp Image 2026-01-06 at 10.23.34.jpeg', basePrice: 89 },
-            { id: 39, name: 'Maroon Dress', image: 'images/Maroon Dress 1.jpg', basePrice: 99 },
-            { id: 40, name: 'Maroon Dress 2', image: 'images/Maroon Dress 2.jpg', basePrice: 105 },
-            { id: 41, name: 'Creambeige Suit', image: 'images/Creambeige suit.jpeg', basePrice: 120 },
-            { id: 42, name: 'Dusty Rosemauve Suit', image: 'images/Dusty rosemauve suit.jpeg', basePrice: 115 },
-            { id: 43, name: 'Royal Blue Suit', image: 'images/Royal blue suit.jpg', basePrice: 130 },
-            { id: 44, name: 'Formal Dress', image: 'images/Formal dress.jpg', basePrice: 60 },
-            { id: 45, name: 'Contact 2', image: 'images/chalogarcia.jpg', basePrice: 62 },
-            { id: 46, name: 'Blog Banner', image: 'images/vladimir.jpg', basePrice: 50 },
-            { id: 47, name: 'Fashionable', image: 'images/Fashionable.jpg', basePrice: 55 },
-            { id: 48, name: 'Three-panel Comparison', image: 'images/Three-panel comparison Brown, navy, and magenta suits - Copy.jpg', basePrice: 140 },
-            { id: 49, name: 'Screenshot', image: 'images/globaldsio.jpg', basePrice: 45 },
-            { id: 50, name: 'Maroon Dress Copy', image: 'images/WhatsApp Image 2025-11-15 at 13.27.21 - Copy.jpg', basePrice: 90 },
-            { id: 51, name: 'Extra Casual Wear', image: 'images/WhatsApp Image 2026-01-02 at 16.18.13 (1).jpeg', basePrice: 48 },
-            { id: 2, name: 'Classic Blouse', image: 'images/WhatsApp Image 2026-01-03 at 07.22.42.jpeg', basePrice: 65 },
-            { id: 3, name: 'Elegant Skirt', image: 'images/WhatsApp Image 2026-01-03 at 07.19.34.jpeg', basePrice: 75 },
-            { id: 4, name: 'Fashion Top', image: 'images/chalo.jpg', basePrice: 55 },
-            { id: 5, name: 'Designer Jacket', image: 'images/WhatsApp Image 2026-01-02 at 16.22.28.jpeg', basePrice: 120 },
-            { id: 6, name: 'Casual Wear', image: 'images/WhatsApp Image 2026-01-02 at 16.18.13.jpeg', basePrice: 45 },
-            { id: 7, name: 'Evening Gown', image: 'images/fotografia.jpg', basePrice: 150 },
-            { id: 8, name: 'Chic Pants', image: 'images/WhatsApp Image 2026-01-02 at 16.11.16.jpeg', basePrice: 70 },
-            { id: 9, name: 'Summer Dress', image: 'images/suheylbura.jpg', basePrice: 60 },
-            { id: 10, name: 'Trendy Outfit', image: 'images/vladimir.jpg', basePrice: 78 },
-            { id: 11, name: 'Smart Casual', image: 'images/shireen.jpg', basePrice: 62 },
-            { id: 12, name: 'Office Style', image: 'images/abayas.jpg', basePrice: 85 },
-            { id: 13, name: 'Casual Chic', image: 'images/chalogarcia.jpg', basePrice: 58 },
-            { id: 14, name: 'Street Style', image: 'images/chalo.jpg', basePrice: 72 },
-            { id: 15, name: 'Fashion Statement', image: 'images/WhatsApp Image 2026-01-02 at 14.32.37.jpeg', basePrice: 95 },
-            { id: 16, name: 'Elegant Piece', image: 'images/WhatsApp Image 2026-01-02 at 14.32.36.jpeg', basePrice: 88 },
-            { id: 17, name: 'Stylish Wear', image: 'images/WhatsApp Image 2026-01-02 at 14.32.36 (1).jpeg', basePrice: 76 },
-            { id: 18, name: 'Premium Look', image: 'images/WhatsApp Image 2026-01-02 at 14.32.35.jpeg', basePrice: 82 },
-            { id: 19, name: 'Modern Fashion', image: 'images/WhatsApp Image 2026-01-02 at 14.32.34.jpeg', basePrice: 80 },
-            { id: 20, name: 'Classy Style', image: 'images/abayas.jpg', basePrice: 90 },
-            { id: 21, name: 'Chic Ensemble', image: 'images/WhatsApp Image 2026-01-02 at 14.30.39.jpeg', basePrice: 74 },
-            { id: 22, name: 'Trendy Look', image: 'images/pexels.jpg', basePrice: 68 },
-            { id: 23, name: 'Fashion Pick', image: 'images/suheylbura.jpg', basePrice: 79 },
+                { id: 1, name: 'Premium Dress', image: 'images/WhatsApp Image 2026-01-06 at 10.23.34.jpeg', basePrice: 89 },
+                { id: 39, name: 'Maroon Dress', image: 'images/Maroon Dress 1.jpg', basePrice: 99 },
+                { id: 40, name: 'Maroon Dress 2', image: 'images/Maroon Dress 2.jpg', basePrice: 105 },
+                { id: 41, name: 'Creambeige Suit', image: 'images/Creambeige suit.jpeg', basePrice: 120 },
+                { id: 42, name: 'Dusty Rosemauve Suit', image: 'images/Dusty rosemauve suit.jpeg', basePrice: 115 },
+                { id: 43, name: 'Royal Blue Suit', image: 'images/Royal blue suit.jpg', basePrice: 130 },
+                { id: 44, name: 'Formal Dress', image: 'images/Formal dress.jpg', basePrice: 60 },
+                { id: 45, name: 'Contact 2', image: 'images/chalogarcia.jpg', basePrice: 62 },
+                { id: 46, name: 'Blog Banner', image: 'images/vladimir.jpg', basePrice: 50 },
+                { id: 47, name: 'Fashionable', image: 'images/Fashionable.jpg', basePrice: 55 },
+                { id: 48, name: 'Three-panel Comparison', image: 'images/Three-panel comparison Brown, navy, and magenta suits - Copy.jpg', basePrice: 140 },
+                { id: 49, name: 'Screenshot', image: 'images/globaldsio.jpg', basePrice: 45 },
+                { id: 50, name: 'Maroon Dress Copy', image: 'images/WhatsApp Image 2025-11-15 at 13.27.21 - Copy.jpg', basePrice: 90 },
+                { id: 51, name: 'Extra Casual Wear', image: 'images/WhatsApp Image 2026-01-02 at 16.18.13 (1).jpeg', basePrice: 48 },
+                { id: 2, name: 'Classic Blouse', image: 'images/WhatsApp Image 2026-01-03 at 07.22.42.jpeg', basePrice: 65 },
+                { id: 3, name: 'Elegant Skirt', image: 'images/WhatsApp Image 2026-01-03 at 07.19.34.jpeg', basePrice: 75 },
+                { id: 4, name: 'Fashion Top', image: 'images/chalo.jpg', basePrice: 55 },
+                { id: 5, name: 'Designer Jacket', image: 'images/WhatsApp Image 2026-01-02 at 16.22.28.jpeg', basePrice: 120 },
+                { id: 6, name: 'Casual Wear', image: 'images/WhatsApp Image 2026-01-02 at 16.18.13.jpeg', basePrice: 45 },
+                { id: 7, name: 'Evening Gown', image: 'images/fotografia.jpg', basePrice: 150 },
+                { id: 8, name: 'Chic Pants', image: 'images/WhatsApp Image 2026-01-02 at 16.11.16.jpeg', basePrice: 70 },
+                { id: 9, name: 'Summer Dress', image: 'images/suheylbura.jpg', basePrice: 60 },
+                { id: 10, name: 'Trendy Outfit', image: 'images/vladimir.jpg', basePrice: 78 },
+                { id: 11, name: 'Smart Casual', image: 'images/shireen.jpg', basePrice: 62 },
+                { id: 12, name: 'Office Style', image: 'images/abayas.jpg', basePrice: 85 },
+                { id: 13, name: 'Casual Chic', image: 'images/chalogarcia.jpg', basePrice: 58 },
+                { id: 14, name: 'Street Style', image: 'images/chalo.jpg', basePrice: 72 },
+                { id: 15, name: 'Fashion Statement', image: 'images/WhatsApp Image 2026-01-02 at 14.32.37.jpeg', basePrice: 95 },
+                { id: 16, name: 'Elegant Piece', image: 'images/WhatsApp Image 2026-01-02 at 14.32.36.jpeg', basePrice: 88 },
+                { id: 17, name: 'Stylish Wear', image: 'images/WhatsApp Image 2026-01-02 at 14.32.36 (1).jpeg', basePrice: 76 },
+                { id: 18, name: 'Premium Look', image: 'images/WhatsApp Image 2026-01-02 at 14.32.35.jpeg', basePrice: 82 },
+                { id: 19, name: 'Modern Fashion', image: 'images/WhatsApp Image 2026-01-02 at 14.32.34.jpeg', basePrice: 80 },
+                { id: 20, name: 'Classy Style', image: 'images/abayas.jpg', basePrice: 90 },
+                { id: 21, name: 'Chic Ensemble', image: 'images/WhatsApp Image 2026-01-02 at 14.30.39.jpeg', basePrice: 74 },
+                { id: 22, name: 'Trendy Look', image: 'images/pexels.jpg', basePrice: 68 },
+                { id: 23, name: 'Fashion Pick', image: 'images/suheylbura.jpg', basePrice: 79 },
+                // New JSON-based products (no duplicates)
+                { name: 'Magenta Power Suit – Zipper Pocket Blazer', image: 'images/Magenta-Power-Suit-Zipper-Pocket-Blazer.jpg', basePrice: 128 },
+                { name: 'Fuchsia Shawl-Lapel Boutique Pantsuit', image: 'images/Fuchsia-Shawl-Lapel-Boutique-Pantsuit.jpg', basePrice: 132 },
+                { name: 'Emerald Belted Waistcoat & Wide-Leg Set', image: 'images/Emerald-Belted-Waistcoat-and-Wide-Leg-Set.jpg', basePrice: 129 },
+                { name: 'Navy Satin-Lapel Pantsuit & Strapless Crop', image: 'images/Navy-Satin-Lapel-Pantsuit-and-Strapless-Crop.jpg', basePrice: 130 },
+                { name: 'Mustard Gold-Button Belted Pantsuit', image: 'images/Mustard-Gold-Button-Belted-Pantsuit.jpg', basePrice: 124 },
+                { name: 'Crimson & Ivory Sunday Best with Hat', image: 'images/Crimson-and-Ivory-Sunday-Best-with-Hat.jpg', basePrice: 145 },
+                { name: 'Burgundy Peplum Skirt Suit', image: 'images/Burgundy-Peplum-Skirt-Suit.jpg', basePrice: 138 },
+                { name: 'Magenta Pleated Midi & Chain Buckle Belt', image: 'images/Magenta-Pleated-Midi-and-Chain-Buckle-Belt.jpg', basePrice: 118 },
+                { name: 'Polka Dot Peplum Train & Slit Pencil Skirt', image: 'images/Polka-Dot-Peplum-Train-and-Slit-Pencil-Skirt.jpg', basePrice: 122 },
+                { name: 'Magenta Beaded Fringe Evening Gown', image: 'images/Magenta-Beaded-Fringe-Evening-Gown.jpg', basePrice: 142 },
+                { name: 'Oatmeal Double-Breast Peplum Skirt Suit', image: 'images/Oatmeal-Double-Breast-Peplum-Skirt-Suit.jpg', basePrice: 126 },
+                { name: 'Camel Pinafore Maxi & Black Bow Blouse', image: 'images/Camel-Pinafore-Maxi-and-Black-Bow-Blouse.jpg', basePrice: 134 },
+                { name: 'Abstract Brushstroke Midi Dress', image: 'images/Abstract-Brushstroke-Midi-Dress.jpg', basePrice: 115 },
+                { name: 'Noir Satin-Puff Sleeve Slit Midi', image: 'images/Noir-Satin-Puff-Sleeve-Slit-Midi.jpg', basePrice: 122 },
+                { name: 'Olive Abstract Ruffle-Sleeve Two-Piece', image: 'images/Olive-Abstract-Ruffle-Sleeve-Two-Piece.jpg', basePrice: 119 },
+                { name: 'Powder Blue Structured Cap-Sleeve Midi', image: 'images/Powder-Blue-Structured-Cap-Sleeve-Midi.jpg', basePrice: 116 },
+                { name: 'Tropical Monstera Wrap Midi Dress', image: 'images/Tropical-Monstera-Wrap-Midi-Dress.jpg', basePrice: 118 },
             { id: 24, name: 'Stylish Piece', image: 'images/WhatsApp Image 2026-01-02 at 14.14.05.jpeg', basePrice: 84 },
             { id: 25, name: 'Premium Wear', image: 'images/WhatsApp Image 2026-01-02 at 14.13.05.jpeg', basePrice: 87 },
             { id: 26, name: 'Modern Outfit', image: 'images/WhatsApp Image 2026-01-02 at 14.12.44.jpeg', basePrice: 73 },
@@ -981,7 +987,9 @@
         const euroSizes = ['32', '34', '36', '38', '40', '42'];
         const exchangeRates = {
             UGX: { symbol: 'UGX', multiplier: 1403 }, // 1 EUR ≈ 1403 UGX
-            KES: { symbol: 'KES', multiplier: 169 }     // 1 EUR ≈ 169 KES
+            KES: { symbol: 'KES', multiplier: 169 },  // 1 EUR ≈ 169 KES
+            USD: { symbol: 'USD', multiplier: 1.08 }, // 1 EUR ≈ 1.08 USD (example rate)
+            EUR: { symbol: 'EUR', multiplier: 1 }     // 1 EUR = 1 EUR
         };
 
         let currentSlide = 0;
@@ -1097,7 +1105,8 @@
             document.getElementById('summaryQty').textContent = '1';
             updatePrice();
 
-            // Admin remove button and login link logic removed
+            // Show remove button for now (always visible)
+            document.getElementById('removeCatalogBtn').style.display = 'inline-block';
             document.getElementById('productModal').style.display = 'block';
         }
 
@@ -1142,18 +1151,16 @@
         // Update price
         function updatePrice() {
             const basePrice = selectedProduct.basePrice;
+            // Update all currency prices
+            document.getElementById('priceUGX').textContent = Math.round(basePrice * exchangeRates['UGX'].multiplier).toLocaleString();
+            document.getElementById('priceKES').textContent = Math.round(basePrice * exchangeRates['KES'].multiplier).toLocaleString();
+            document.getElementById('priceUSD').textContent = '$' + (basePrice * exchangeRates['USD'].multiplier).toFixed(2);
+            document.getElementById('priceEUR').textContent = '€' + (basePrice * exchangeRates['EUR'].multiplier).toFixed(2);
+
+            // Calculate total in selected currency
             const rate = exchangeRates[selectedCurrency].multiplier;
             const price = Math.round(basePrice * rate);
             const total = price * selectedQuantity;
-
-            if (selectedCurrency === 'UGX') {
-                document.getElementById('priceUGX').textContent = price.toLocaleString();
-                document.getElementById('priceKES').textContent = (Math.round(basePrice * exchangeRates['KES'].multiplier)).toLocaleString();
-            } else {
-                document.getElementById('priceUGX').textContent = (Math.round(basePrice * exchangeRates['UGX'].multiplier)).toLocaleString();
-                document.getElementById('priceKES').textContent = price.toLocaleString();
-            }
-
             document.getElementById('summaryTotal').textContent = total.toLocaleString() + ' ' + selectedCurrency;
         }
 
