@@ -1,51 +1,83 @@
+// Show/hide loading indicator
+function showLoading(show) {
+  const loadingDiv = document.getElementById('loading');
+  if (loadingDiv) loadingDiv.style.display = show ? '' : 'none';
+}
+
+// Show feedback message (success or error)
+function showFeedback(msg, isError) {
+  const feedbackDiv = document.getElementById('feedback');
+  if (!feedbackDiv) return;
+  feedbackDiv.textContent = msg;
+  feedbackDiv.style.display = 'block';
+  feedbackDiv.style.background = isError ? '#f8d7da' : '#d4edda';
+  feedbackDiv.style.color = isError ? '#721c24' : '#155724';
+  feedbackDiv.style.border = isError ? '1px solid #f5c6cb' : '1px solid #c3e6cb';
+  setTimeout(() => { feedbackDiv.style.display = 'none'; }, 2500);
+}
 // cart and purchase logic extracted from inventory.html
 // This will allow cart features to be reused on other pages
 
-// ---------- GLOBAL DATA STORE ----------
-// Only declare these once, on window for global access
-window.products = JSON.parse(localStorage.getItem('products')||'[]');
-window.cart = JSON.parse(localStorage.getItem('cart')||'[]');
-window.coupons = JSON.parse(localStorage.getItem('coupons')||'[]');
 
-function reloadData() {
-  window.products = JSON.parse(localStorage.getItem('products')||'[]');
-  window.cart = JSON.parse(localStorage.getItem('cart')||'[]');
-  window.coupons = JSON.parse(localStorage.getItem('coupons')||'[]');
-}
+// ---------- GLOBAL DATA STORE (API-based) ----------
+let products = [];
+let cart = [];
 const rates = { USD: 1, UGX: 3800, KES: 160, GBP: 0.8 };
 const symbols = { USD: '$', UGX: 'USh', KES: 'KSh', GBP: '£' };
 
-function saveAll() {
-  localStorage.setItem('products', JSON.stringify(products));
-  localStorage.setItem('cart', JSON.stringify(cart));
-  localStorage.setItem('coupons', JSON.stringify(coupons));
+async function fetchProducts() {
+  const res = await fetch('http://localhost:3000/api/products');
+  if (!res.ok) throw new Error('Failed to fetch products');
+  products = await res.json();
 }
 
-function renderProducts() {
-  reloadData();
-  // Fetch products from backend if needed, or use window.products
-  fetch('http://localhost:3001/api/products')
-    .then(res => res.json())
-    .then(products => {
-      window.products = products;
-      const tbody = document.querySelector('#productTable tbody');
-      if (!tbody) return;
-      tbody.innerHTML = '';
-      products.forEach((p) => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td>${p.name}</td>
-          <td>$${(+p.price).toFixed(2)}</td>
-          <td>${p.image ? `<img src='${p.image}' alt='' style='width:40px;height:40px;object-fit:cover;border-radius:4px;'>` : ''}</td>
-          <td><button onclick="deleteProduct(${p.id})">Delete</button></td>
-        `;
-        tbody.appendChild(tr);
-      });
+async function fetchCart() {
+  const res = await fetch('http://localhost:3000/api/cart', { credentials: 'include' });
+  if (!res.ok) throw new Error('Failed to fetch cart');
+  cart = await res.json();
+}
+
+async function updateCartOnServer() {
+  try {
+    await fetch('http://localhost:3000/api/cart', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify(cart)
     });
+    showFeedback('Cart updated!', false);
+  } catch (err) {
+    showFeedback('Failed to update cart.', true);
+  }
 }
 
-function renderCart() {
-  reloadData();
+async function renderProducts() {
+  await fetchProducts();
+  const tbody = document.querySelector('#productTable tbody');
+  if (!tbody) return;
+  tbody.innerHTML = '';
+  products.forEach((p) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${p.name}</td>
+      <td>$${(+p.price).toFixed(2)}</td>
+      <td>${p.image ? `<img src='${productImageUrl(p.image)}' alt='' style='width:40px;height:40px;object-fit:cover;border-radius:4px;'>` : ''}</td>
+      <td><button onclick="deleteProduct(${p.id})">Delete</button></td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+async function renderCart() {
+  showLoading(true);
+  try {
+    await fetchCart();
+  } catch (err) {
+    showFeedback('Could not load cart. Please try again.', true);
+    showLoading(false);
+    return;
+  }
+  showLoading(false);
   const tbody = document.getElementById('cartItems');
   const emptyDiv = document.getElementById('cartEmpty');
   if (!tbody) return;
@@ -58,7 +90,6 @@ function renderCart() {
     if (emptyDiv) emptyDiv.style.display = 'none';
   }
   cart.forEach((item, i) => {
-    // item: {id, name, image, size, currency, quantity, price}
     let price = item.price;
     let symbol = symbols[item.currency] || item.currency;
     let rowTotal = price * item.quantity;
@@ -66,7 +97,7 @@ function renderCart() {
     const tr = document.createElement('tr');
     tr.innerHTML = `
       <td style="display:flex;align-items:center;gap:10px;">
-        <img src="${item.image}" alt="${item.name}" style="width:48px;height:48px;object-fit:cover;border-radius:6px;">
+        <img src="${productImageUrl(item.image)}" alt="${item.name}" style="width:48px;height:48px;object-fit:cover;border-radius:6px;">
         <div>
           <div style="font-weight:600;">${item.name}</div>
           <div style="font-size:0.95em;color:#888;">Size: ${item.size}</div>
@@ -86,12 +117,13 @@ function renderCart() {
   // document.getElementById('cartTotal')?.textContent = 'Total: ' + total;
 }
 
-window.updateCartQty = function(idx, val) {
+
+window.updateCartQty = async function(idx, val) {
   let qty = parseInt(val);
   if (isNaN(qty) || qty < 1) qty = 1;
   if (qty > 10) qty = 10;
   cart[idx].quantity = qty;
-  localStorage.setItem('cart', JSON.stringify(cart));
+  await updateCartOnServer();
   renderCart();
 }
 
@@ -100,18 +132,19 @@ window.editCartItem = function(idx) {
 }
 
 
-window.incrementQty = function(idx) {
+
+window.incrementQty = async function(idx) {
   if (cart[idx].quantity < 10) {
     cart[idx].quantity++;
-    saveAll();
+    await updateCartOnServer();
     renderCart();
   }
 }
 
-window.decrementQty = function(idx) {
+window.decrementQty = async function(idx) {
   if (cart[idx].quantity > 1) {
     cart[idx].quantity--;
-    saveAll();
+    await updateCartOnServer();
     renderCart();
   }
 }
@@ -198,15 +231,15 @@ window.removeFromCartTable = function(idx) {
   renderCartTable();
 }
 
-document.addEventListener('DOMContentLoaded', function() {
-  renderCart();
-  renderCartTable();
+document.addEventListener('DOMContentLoaded', async function() {
+  await renderCart();
+  await renderProducts();
   const clearBtn = document.getElementById('clearCartBtn');
   if (clearBtn) {
-    clearBtn.addEventListener('click', function() {
+    clearBtn.addEventListener('click', async function() {
       if (confirm('Are you sure you want to clear the entire cart?')) {
         cart.length = 0;
-        saveAll();
+        await updateCartOnServer();
         renderCart();
         renderCartTable();
       }

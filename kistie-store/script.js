@@ -1,3 +1,7 @@
+// To run the React frontend:
+// 1. cd kistie-store/React
+// 2. npm run dev
+// This will start the Vite dev server at http://localhost:5173
 // ---------- SCRIPT.JS ----------
 // Smooth scroll for internal links
 window.products = JSON.parse(localStorage.getItem('products')||'[]');
@@ -18,7 +22,7 @@ function renderProducts() {
   tbody.innerHTML = '';
   // Store idx for edit
   window._productIdxMap = {};
-    fetch('http://localhost:3001/api/products', { credentials: 'include' })
+    fetch('http://localhost:3000/api/products', { credentials: 'include' })
     .then(res => res.json())
     .then(products => {
       window.products = products;
@@ -45,7 +49,7 @@ function renderProducts() {
         const tdImg = document.createElement('td');
         if (product.image) {
           const img = document.createElement('img');
-          img.src = product.image;
+          img.src = productImageUrl(product.image);
           img.alt = product.name || '';
           img.style.maxWidth = '60px';
           img.style.maxHeight = '60px';
@@ -111,7 +115,7 @@ function openEditModal(idx) {
       alert('Invalid input.');
       return;
     }
-    fetch(`http://localhost:3001/api/products/${product.id || product._id || idx}`, {
+    fetch(`http://localhost:3000/api/products/${product.id || product._id || idx}`, {
       method: 'PUT',
       credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
@@ -136,7 +140,8 @@ function openEditModal(idx) {
 function removeProduct(idx) {
   if (!confirm('Remove this product?')) return;
   const product = window.products[idx];
-    fetch(`http://localhost:3001/api/products/${product.id || product._id || idx}`, {
+  showInventoryLoading(true);
+  fetch(`http://localhost:3000/api/products/${product.id || product._id || idx}`, {
     method: 'DELETE',
     credentials: 'include'
   })
@@ -144,8 +149,43 @@ function removeProduct(idx) {
       if (!res.ok) throw new Error('Failed to delete product');
       return res.json();
     })
-    .then(() => renderProducts())
-    .catch(err => alert('Error deleting product: ' + err.message));
+    .then(() => {
+      showInventoryLoading(false);
+      showInventoryFeedback('Product removed from inventory.', true);
+      renderProducts();
+    })
+    .catch(err => {
+      showInventoryLoading(false);
+      showInventoryFeedback('Error deleting product: ' + err.message, false);
+    });
+}
+
+// Inventory loading and feedback helpers
+function showInventoryLoading(isLoading) {
+  let loadingDiv = document.getElementById('inventoryLoading');
+  if (!loadingDiv) {
+    loadingDiv = document.createElement('div');
+    loadingDiv.id = 'inventoryLoading';
+    loadingDiv.style = 'text-align:center;padding:1em;color:#2979ff;';
+    const section = document.getElementById('productManagementSection') || document.body;
+    section.prepend(loadingDiv);
+  }
+  loadingDiv.style.display = isLoading ? '' : 'none';
+  loadingDiv.textContent = isLoading ? 'Processing...' : '';
+}
+function showInventoryFeedback(msg, success) {
+  let feedbackDiv = document.getElementById('inventoryFeedback');
+  if (!feedbackDiv) {
+    feedbackDiv = document.createElement('div');
+    feedbackDiv.id = 'inventoryFeedback';
+    feedbackDiv.style = 'text-align:center;padding:1em;';
+    const section = document.getElementById('productManagementSection') || document.body;
+    section.prepend(feedbackDiv);
+  }
+  feedbackDiv.style.display = '';
+  feedbackDiv.textContent = msg;
+  feedbackDiv.style.color = success ? '#2979ff' : '#b00020';
+  setTimeout(() => { feedbackDiv.style.display = 'none'; }, 2500);
 }
 
 // Add product handler (for admin add form)
@@ -161,7 +201,7 @@ document.addEventListener('DOMContentLoaded', function() {
         alert('Invalid input.');
         return;
       }
-        fetch('http://localhost:3001/api/products', {
+        fetch('http://localhost:3000/api/products', {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
@@ -375,7 +415,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         // Send order to backend
         try {
-          const res = await fetch('http://localhost:3001/api/orders', {
+          const res = await fetch('http://localhost:3000/api/orders', {
             method: 'POST',
             credentials: 'include',
             headers: { 'Content-Type': 'application/json' },

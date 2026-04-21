@@ -691,6 +691,12 @@
     </style>
 </head>
 <body>
+    <!-- Loading Indicator -->
+    <div id="loading" style="display:none;text-align:center;padding:2em;font-size:1.2em;">
+        <span>Loading products...</span>
+    </div>
+    <!-- Error Message -->
+    <div id="error" style="display:none;text-align:center;padding:2em;color:#b00020;font-size:1.1em;"></div>
     <!-- Header -->
     <div class="ig-header">
         <div class="ig-header-content">
@@ -853,33 +859,47 @@
         </div>
     </div>
 
+    <script src="productImageUrl.js"></script>
     <script>
-        // Sample posts data
-        const posts = [
-            { src: 'images/WhatsApp Image 2026-01-06 at 10.23.34.jpeg', likes: 234, comments: 18 },
-            { src: 'images/WhatsApp Image 2026-01-03 at 07.22.42.jpeg', likes: 456, comments: 32 },
-            { src: 'images/WhatsApp Image 2026-01-03 at 07.19.34.jpeg', likes: 389, comments: 25 },
-            { src: 'images/WhatsApp Image 2026-01-03 at 07.18.21.jpeg', likes: 567, comments: 41 },
-            { src: 'images/WhatsApp Image 2026-01-02 at 16.22.28.jpeg', likes: 423, comments: 29 },
-            { src: 'images/WhatsApp Image 2026-01-02 at 16.18.13.jpeg', likes: 578, comments: 44 },
-            { src: 'images/WhatsApp Image 2026-01-02 at 16.12.15.jpeg', likes: 312, comments: 22 },
-            { src: 'images/WhatsApp Image 2026-01-02 at 16.11.16.jpeg', likes: 634, comments: 51 },
-            { src: 'images/WhatsApp Image 2026-01-02 at 15.57.00.jpeg', likes: 445, comments: 33 },
-        ];
+        // Fetch products from backend API with loading and error handling
+        let products = [];
+        async function fetchProducts() {
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('error').style.display = 'none';
+            try {
+                const res = await fetch('http://localhost:3000/api/products');
+                if (!res.ok) throw new Error('Failed to fetch products');
+                products = await res.json();
+            } catch (err) {
+                products = [];
+                document.getElementById('error').textContent = 'Sorry, we could not load products. Please try again later.';
+                document.getElementById('error').style.display = 'block';
+                console.error('Error loading products:', err);
+            } finally {
+                document.getElementById('loading').style.display = 'none';
+            }
+        }
 
-        // Load gallery
-        function loadGallery(filter = 'posts') {
+        // Load gallery with products
+        function loadGallery() {
             const gallery = document.getElementById('gallery');
             gallery.innerHTML = '';
-
-            posts.forEach((post, index) => {
+            if (!products.length) {
+                // Only show 'no products' if there is no error
+                if (document.getElementById('error').style.display === 'none') {
+                    gallery.innerHTML = '<p>No products available.</p>';
+                }
+                return;
+            }
+            products.forEach((product, index) => {
                 const item = document.createElement('div');
                 item.className = 'gallery-item';
+                const imgSrc = productImageUrl(Array.isArray(product.images) && product.images.length ? product.images[0] : (product.image || ''));
                 item.innerHTML = `
-                    <img src="${post.src}" alt="Post ${index + 1}" onclick="openModal(event)">
+                    <img src="${imgSrc}" alt="${product.name || 'Product'}" onclick="openModal(event, ${index})">
                     <div class="gallery-overlay">
-                        <div class="gallery-stat">❤️ ${post.likes}</div>
-                        <div class="gallery-stat">💬 ${post.comments}</div>
+                        <div class="gallery-stat">❤️ ${product.likes || Math.floor(Math.random()*500+100)}</div>
+                        <div class="gallery-stat">💬 ${product.comments || Math.floor(Math.random()*40+10)}</div>
                     </div>
                 `;
                 gallery.appendChild(item);
@@ -901,26 +921,31 @@
             setTimeout(() => btn.style.animation = '', 300);
         }
 
-        // Pricing and shopping variables
-        const prices = { UGX: 125000, KES: 15000 };
+        // Shopping variables
         let selectedSize = null;
         let selectedQty = 1;
         let selectedCurrency = 'UGX';
 
-        // Open modal
-        function openModal(event) {
+        // Open modal for selected product
+        let currentProductIndex = null;
+        function openModal(event, index) {
             event.stopPropagation();
+            currentProductIndex = index;
             const modal = document.getElementById('imageModal');
             const modalImg = document.getElementById('modalImage');
-            const src = event.target.src;
+            const product = products[index];
+            const imgSrc = productImageUrl(Array.isArray(product.images) && product.images.length ? product.images[0] : (product.image || ''));
             modal.style.display = 'block';
-            modalImg.src = src;
-            
+            modalImg.src = imgSrc;
+            // Set product name and price in modal
+            document.querySelector('.product-panel h2').textContent = product.name || 'Fashion Item';
+            document.getElementById('priceValue').textContent = (product.price || 0).toLocaleString();
+            document.getElementById('priceLabel').textContent = `Price (${product.currency || 'UGX'}):`;
+            document.getElementById('currencySelect').value = product.currency || 'UGX';
             // Reset form
             selectedSize = null;
             selectedQty = 1;
-            selectedCurrency = 'UGX';
-            document.getElementById('currencySelect').value = 'UGX';
+            selectedCurrency = product.currency || 'UGX';
             document.querySelectorAll('.size-btn').forEach(btn => btn.classList.remove('selected'));
             document.getElementById('qtyInput').value = 1;
             document.getElementById('sizeDisplay').textContent = 'Not selected';
@@ -978,16 +1003,26 @@
         function updatePrice() {
             const currency = document.getElementById('currencySelect').value;
             selectedCurrency = currency;
-            const basePrice = prices[currency];
+            let basePrice = 0;
+            if (currentProductIndex !== null && products[currentProductIndex]) {
+                const product = products[currentProductIndex];
+                if (currency === (product.currency || 'UGX')) {
+                    basePrice = product.price || 0;
+                } else {
+                    // Simple currency conversion fallback (customize as needed)
+                    if (currency === 'UGX' && product.price && product.currency === 'KES') {
+                        basePrice = Math.round(product.price * 8.5); // Example rate
+                    } else if (currency === 'KES' && product.price && product.currency === 'UGX') {
+                        basePrice = Math.round(product.price / 8.5);
+                    } else {
+                        basePrice = product.price || 0;
+                    }
+                }
+            }
             const total = basePrice * selectedQty;
-            
-            const priceLabel = document.getElementById('priceLabel');
-            const priceValue = document.getElementById('priceValue');
-            const totalDisplay = document.getElementById('totalDisplay');
-            
-            priceLabel.textContent = currency === 'UGX' ? 'Price (UGX):' : 'Price (KES):';
-            priceValue.textContent = basePrice.toLocaleString();
-            totalDisplay.textContent = total.toLocaleString();
+            document.getElementById('priceLabel').textContent = `Price (${currency}):`;
+            document.getElementById('priceValue').textContent = basePrice.toLocaleString();
+            document.getElementById('totalDisplay').textContent = total.toLocaleString();
         }
 
         // Add to cart
@@ -996,9 +1031,24 @@
                 alert('⚠️ Please select a size!');
                 return;
             }
-            const basePrice = prices[selectedCurrency];
+            let basePrice = 0;
+            if (currentProductIndex !== null && products[currentProductIndex]) {
+                const product = products[currentProductIndex];
+                if (selectedCurrency === (product.currency || 'UGX')) {
+                    basePrice = product.price || 0;
+                } else {
+                    // Simple currency conversion fallback
+                    if (selectedCurrency === 'UGX' && product.price && product.currency === 'KES') {
+                        basePrice = Math.round(product.price * 8.5);
+                    } else if (selectedCurrency === 'KES' && product.price && product.currency === 'UGX') {
+                        basePrice = Math.round(product.price / 8.5);
+                    } else {
+                        basePrice = product.price || 0;
+                    }
+                }
+            }
             const total = basePrice * selectedQty;
-            const currency = selectedCurrency === 'UGX' ? 'UGX' : 'KES';
+            const currency = selectedCurrency;
             alert(`✅ Added to cart!\n\nSize: ${selectedSize}\nQuantity: ${selectedQty}\nTotal: ${total.toLocaleString()} ${currency}`);
             closeModal();
         }
@@ -1009,9 +1059,24 @@
                 alert('⚠️ Please select a size!');
                 return;
             }
-            const basePrice = prices[selectedCurrency];
+            let basePrice = 0;
+            if (currentProductIndex !== null && products[currentProductIndex]) {
+                const product = products[currentProductIndex];
+                if (selectedCurrency === (product.currency || 'UGX')) {
+                    basePrice = product.price || 0;
+                } else {
+                    // Simple currency conversion fallback
+                    if (selectedCurrency === 'UGX' && product.price && product.currency === 'KES') {
+                        basePrice = Math.round(product.price * 8.5);
+                    } else if (selectedCurrency === 'KES' && product.price && product.currency === 'UGX') {
+                        basePrice = Math.round(product.price / 8.5);
+                    } else {
+                        basePrice = product.price || 0;
+                    }
+                }
+            }
             const total = basePrice * selectedQty;
-            const currency = selectedCurrency === 'UGX' ? 'UGX' : 'KES';
+            const currency = selectedCurrency;
             alert(`💳 Proceeding to checkout\n\nSize: ${selectedSize}\nQuantity: ${selectedQty}\nTotal: ${total.toLocaleString()} ${currency}\n\nContact: +256 704 757198`);
             closeModal();
         }
@@ -1023,8 +1088,8 @@
             }
         });
 
-        // Load initial gallery
-        loadGallery();
+        // Initial load: fetch products and render gallery
+        fetchProducts().then(loadGallery);
     </script>
 </body>
 </html>

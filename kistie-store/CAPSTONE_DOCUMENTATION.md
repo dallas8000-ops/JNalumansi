@@ -40,13 +40,15 @@ Kistie Store is a professional, modern e-commerce platform for fashion retail, o
 - **Frontend:** HTML, CSS, JavaScript
 - **Deployment:** Render.com
 **Reasons for Technology Choices:**
+**Technology Stack:**
+- HTML5 · CSS3 · JavaScript (ES6+) · Python
 - Node.js/Express for fast, scalable backend
 - SQLite for lightweight, easy-to-deploy database
-- HTML/CSS/JS for maximum compatibility and responsiveness
+
 **Architecture Overview:**
-- RESTful API backend
-- Static frontend served via HTML/CSS/JS
-- Database for persistent storage
+- RESTful API backend (Node.js/Express)
+- Static frontend served via HTML5, CSS3, and JavaScript (ES6+)
+- Database (SQLite) for persistent storage
 ## 7. Feature List
 See `SHOPPING_FEATURES.md` and `PROJECT_SUMMARY.md` for a detailed, up-to-date feature list. Highlights include:
 - Product selection and purchasing (size, quantity, currency)

@@ -1,6 +1,9 @@
+
 # Kistie Store Backend
 
 This is the backend for the Kistie Store project. It provides a REST API for products, cart, and orders, with SQLite for persistence. The backend handles product inventory, cart management, currency conversion, and is ready for payment gateway integration.
+
+**Note:** All business logic and API endpoints are implemented in Node.js/Express. Python scripts in `../flask_backend/` are used only for admin/maintenance tasks (e.g., database cleanup, verification) and are not part of the main backend stack.
 
 ## Features
 - Product listing and inventory management
@@ -10,6 +13,14 @@ This is the backend for the Kistie Store project. It provides a REST API for pro
 - User/session support for persistent carts
 - Ready for payment gateway integration
 
+## Admin/Maintenance Scripts (Python)
+- Python scripts for database cleanup and verification are located in `../flask_backend/`.
+- These scripts are for admin/maintenance use only and do not serve the main application.
+
+## Product images (single location)
+- Canonical folder: **`../React/public/images/`** (see `paths.js` → `PRODUCT_IMAGES_DIR`).
+- Store **only the filename** in SQLite (`products.image`); URLs are `/images/<filename>`.
+- Node scripts in this folder (`auto-add-new-images.js`, `fix-db-image-references.js`, etc.) all use `PRODUCT_IMAGES_DIR`.
 
 ## Environment Variables
 Create a `.env` file in the backend directory with the following content:
